@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Puzle con imagen</title>
+
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          text-align: center;
+        }
+
+        #puzzle {
+          width: 300px;
+          height: 300px;
+          margin: 20px auto;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 2px;
+        }
+
+        .tile {
+          width: 100px;
+          height: 100px;
+          background-image: url("Misi.png");
+          background-size: 300px 300px;
+          cursor: pointer;
+        }
+
+        .empty {
+          background: #eee;
+          cursor: default;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Puzle deslizante</h1>
+<div id="puzzle"></div>
+
+<script>
+    const size = 3;
+    const puzzle = document.getElementById("puzzle");
+
+    // Estado correcto
+    const solved = [...Array(size * size).keys()];
+
+    // Estado actual
+    let tiles = [...solved];
+
+    // Última pieza vacía
+    tiles[tiles.length - 1] = null;
+
+    function draw() {
+      puzzle.innerHTML = "";
+
+      tiles.forEach((value, index) => {
+        const tile = document.createElement("div");
+        tile.className = "tile";
+
+        if (value === null) {
+          tile.classList.add("empty");
+        } else {
+          const x = (value % size) * -100;
+          const y = Math.floor(value / size) * -100;
+          tile.style.backgroundPosition = `${x}px ${y}px`;
+          tile.onclick = () => move(index);
+        }
+
+        puzzle.appendChild(tile);
+      });
+    }
+
+    function move(index) {
+      const empty = tiles.indexOf(null);
+      const valid =
+        index === empty - 1 ||
+        index === empty + 1 ||
+        index === empty - size ||
+        index === empty + size;
+
+      if (valid) {
+        [tiles[index], tiles[empty]] =
+        [tiles[empty], tiles[index]];
+
+        draw();
+        checkVictory();
+      }
+    }
+
+    function checkVictory() {
+      for (let i = 0; i < solved.length - 1; i++) {
+        if (tiles[i] !== solved[i]) return;
+      }
+      setTimeout(() => alert("Nos veremos pronto"), 100);
+    }
+
+    function shuffle() {
+      do {
+        tiles.sort(() => Math.random() - 0.5);
+      } while (!isSolvable());
+    }
+
+    // Comprobación básica de solvencia
+    function isSolvable() {
+      let inv = 0;
+      let arr = tiles.filter(x => x !== null);
+      for (let i = 0; i < arr.length; i++)
+        for (let j = i + 1; j < arr.length; j++)
+          if (arr[i] > arr[j]) inv++;
+      return inv % 2 === 0;
+    }
+
+    shuffle();
+    draw();
+</script>
+</body>
+</html>
